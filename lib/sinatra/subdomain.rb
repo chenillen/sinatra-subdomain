@@ -19,6 +19,41 @@ module Sinatra
       end
     end
 
+    def subdomains(array_of_subdomains = [], &block)
+      if array_of_subdomains.is_a? Array
+        if array_of_subdomains == []
+          if block_given?
+            ::Sinatra::Subdomain.tap do |mod|
+              mod.app = self
+              mod.subdomain = true
+            end
+
+            yield
+
+            ::Sinatra::Subdomain.tap do |mod|
+              mod.app = nil
+              mod.subdomain = nil
+            end
+          end
+        else
+          array_of_subdomains.each do |expected_subdomain|
+            ::Sinatra::Subdomain.tap do |mod|
+              mod.app = self
+              mod.subdomain = expected_subdomain
+            end
+
+            yield
+
+            ::Sinatra::Subdomain.tap do |mod|
+              mod.app = nil
+              mod.subdomain = nil
+            end
+          end
+
+        end
+      end
+    end
+
     def subdomain(expected_subdomain = true)
       ::Sinatra::Subdomain.tap do |mod|
         mod.app = self
